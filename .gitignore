@@ -1,3 +1,2 @@
-.vagrant
 __pycache__
-.bash_history
+celerybeat-schedule

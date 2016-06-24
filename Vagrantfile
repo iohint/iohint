@@ -76,6 +76,20 @@ Vagrant.configure(2) do |config|
     background.vm.provider 'docker' do |d|
       d.build_dir = 'background'
       d.link('rabbit:rabbit')
+      # d.cmd = ['celery', 'worker', '--autoreload']
+
+      # Disable Vagrant's built-in Docker VM, as we're using the Docker for Mac beta instead.
+      d.force_host_vm = false
+    end
+  end
+
+  config.vm.define 'background-scheduler' do |background|
+    background.vm.synced_folder 'background/', '/home/user'
+
+    background.vm.provider 'docker' do |d|
+      d.build_dir = 'background'
+      d.link('rabbit:rabbit')
+      d.cmd = ['celery', 'beat']
 
       # Disable Vagrant's built-in Docker VM, as we're using the Docker for Mac beta instead.
       d.force_host_vm = false

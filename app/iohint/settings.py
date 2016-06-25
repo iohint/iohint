@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
+from datetime import timedelta
+
 import os
 import dj_database_url
 
@@ -34,12 +36,18 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    # Official Django apps
     #'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     #'django.contrib.sessions',
     #'django.contrib.messages',
     #'django.contrib.staticfiles',
+
+    # Third-party Django apps
+    'djcelery',
+
+    # iohint's Django apps
     'cloudwatch',
 ]
 
@@ -118,3 +126,20 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 # STATIC_URL = '/static/'
+
+
+# Celery configuration
+
+BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'amqp://')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERYBEAT_SCHEDULE = {
+    'add-every-30-seconds': {
+        'task': 'cloudwatch.tasks.add',
+        'schedule': timedelta(seconds=3),
+        'args': (16, 16)
+    },
+}
+CELERY_RESULT_BACKEND = 'djcelery.backends.database:DatabaseBackend'
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'

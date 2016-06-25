@@ -1,3 +1,3 @@
 workon iohint-background
 #watchman-make -p '**/*.py'
-celery worker --beat --app iohint.background.app
+celery worker --beat --app iohint -l info

@@ -2,7 +2,13 @@ import pytest
 import pytz
 from datetime import datetime
 from unittest.mock import Mock, patch
-from cloudwatch.tasks import insert_metric_data, fetch_metric_data, refresh_metric_data
+from cloudwatch.tasks import (
+    insert_metric_data,
+    fetch_metric_data,
+    refresh_metric_data,
+    refresh_elb_metrics,
+    schedule_all_elb_refreshes,
+)
 from cloudwatch import tasks
 
 @pytest.fixture
@@ -201,3 +207,58 @@ class TestRefreshMetricData:
         mock_insert_metric_data.return_value = (1, 1) # 1 insert, 1 failed
         refresh_metric_data(metric.id)
         assert mock_insert_metric_data.call_count == 1
+
+    def test_is_shared_task(self):
+        assert hasattr(refresh_metric_data, 'app')
+
+    def test_is_transaction_atomic(self, metric, mock_fetch_metric_data, mock_insert_metric_data, mock_datetime_now):
+        def assert_in_transaction(metric, *args):
+            from django.db import transaction
+            assert transaction.get_autocommit() == False
+        mock_fetch_metric_data.side_effect = assert_in_transaction
+        refresh_metric_data(metric.id)
+
+@pytest.fixture
+def mock_refresh_metric_data(request):
+    patcher = patch.object(tasks, 'refresh_metric_data')
+    request.addfinalizer(lambda: patcher.stop())
+    mock = patcher.start()
+    return mock
+
+@pytest.mark.django_db
+class TestRefreshElbMetrics:
+    def test_retrieves_metric(self, load_balancer, metric, mock_refresh_metric_data):
+        refresh_elb_metrics(load_balancer.id)
+        mock_refresh_metric_data.assert_called_with(metric.id)
+
+    def test_retrieves_multiple_metrics(self, load_balancer, metric, mock_refresh_metric_data):
+        second_metric = load_balancer.metric_set.create(name='AnotherMetric', statistic='Sum')
+        refresh_elb_metrics(load_balancer.id)
+        mock_refresh_metric_data.assert_called_with(second_metric.id)
+        assert mock_refresh_metric_data.call_count == 2
+
+    def test_is_shared_task(self):
+        assert hasattr(refresh_elb_metrics, 'app')
+
+@pytest.fixture
+def mock_refresh_elb_metrics(request):
+    patcher = patch.object(tasks, 'refresh_elb_metrics')
+    request.addfinalizer(lambda: patcher.stop())
+    mock = patcher.start()
+    return mock
+
+@pytest.mark.django_db
+class TestScheduleAllElbRefreshes:
+    def test_schedules_refresh_metric(self, load_balancer, mock_refresh_elb_metrics):
+        schedule_all_elb_refreshes()
+        mock_refresh_elb_metrics.delay.assert_called_with(load_balancer.id)
+
+    def test_schedules_multiple_elbs(self, load_balancer, mock_refresh_elb_metrics, service, credential):
+        from cloudwatch.models import LoadBalancer
+        additional_lb = LoadBalancer.objects.create(service=service, region='aws-region-1', name='lb-name-2', credential=credential)
+        schedule_all_elb_refreshes()
+        mock_refresh_elb_metrics.delay.assert_called_with(additional_lb.id)
+        assert mock_refresh_elb_metrics.delay.call_count == 2
+
+    def test_is_shared_task(self):
+        assert hasattr(schedule_all_elb_refreshes, 'app')

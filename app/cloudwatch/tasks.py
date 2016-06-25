@@ -1,9 +1,13 @@
 from celery import shared_task
 from django.db import transaction, IntegrityError
-from .models import Value, Metric
+from .models import Value, Metric, LoadBalancer
 from datetime import datetime, timedelta
 import pytz
 import boto3
+
+@shared_task
+def generate(i):
+    return list(x for x in range(i))
 
 @shared_task
 def add(x, y):
@@ -13,14 +17,25 @@ def add(x, y):
 def mul(x, y):
     return x * y
 
-
-# Task #1: dispatch tasks to refresh the CloudWatch data for every ELB
-
-# Task #2: Refresh the CloudWatch data for a specific ELB
-#   Reads CloudWatch data until we find an overlap with data we already have.
-
-# @transaction.atomic FIXME TDD
+# dispatch tasks to refresh the CloudWatch data for every ELB
 @shared_task
+def schedule_all_elb_refreshes():
+    for elb in LoadBalancer.objects.all():
+        refresh_elb_metrics.delay(elb.id)
+
+# Refresh all metrics for a given load balancer; all the metrics will be refreshed in-process, since
+# (a) can't figure out how to make celery take a task w/ a list and execute multiple subtasks without waiting
+# on it in-process, and (b) doesn't seem like a big deal to be able to scale a handful of metrics out, anyway.
+@shared_task
+def refresh_elb_metrics(elb_id):
+    elb = LoadBalancer.objects.get(pk=elb_id)
+    for metric in elb.metric_set.all():
+        refresh_metric_data(metric.id)
+
+# Refresh a single metric; multiple calls to CloudWatch will be made until we have retrieved all available
+# data for this metric and stored it in our database.
+@shared_task
+@transaction.atomic
 def refresh_metric_data(metric_id):
     metric = Metric.objects.select_related('load_balancer', 'load_balancer__credential').get(pk=metric_id)
     query_end = datetime.now()

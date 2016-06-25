@@ -8,7 +8,7 @@ celery==3.1.23
 colorama==0.3.7
 dj-database-url==0.4.1
 Django==1.10b1
-django-celery==3.1.17
+https://github.com/mfenniak/django-celery/archive/3.1-django_10_default_manager_fix.zip
 docopt==0.6.2
 docutils==0.12
 jmespath==0.9.0

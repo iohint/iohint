@@ -1,6 +1,7 @@
 from celery import shared_task
 from django.db import transaction, IntegrityError
-from .models import Value
+from .models import Value, Metric
+from datetime import datetime, timedelta
 import pytz
 import boto3
 
@@ -21,18 +22,21 @@ def mul(x, y):
 # @transaction.atomic FIXME TDD
 @shared_task
 def refresh_metric_data(metric_id):
-    # retrieve metric, lb, cred
-    # boto connect_to_region
-    # loop over query time
-    #   get_metric_statistics
-    #   insert results into value; count integrity errors & inserted records
-    pass
+    metric = Metric.objects.select_related('load_balancer', 'load_balancer__credential').get(pk=metric_id)
+    query_end = datetime.now()
+    while True:
+        query_start = query_end - timedelta(seconds=60  * 1440)
+        metric_data = fetch_metric_data(metric, query_start, query_end)
+        insert_count, failed_count = insert_metric_data(metric, metric_data)
+        if insert_count == 0 or failed_count > 0:
+            break
+        query_end = query_start
 
 def fetch_metric_data(metric, query_start, query_end):
     load_balancer = metric.load_balancer
     credential = load_balancer.credential
     cloudwatch = boto3.client('cloudwatch',
-        region=load_balancer.region,
+        region_name=load_balancer.region,
         aws_access_key_id=credential.access_key_id,
         aws_secret_access_key=credential.secret_access_key)
     return cloudwatch.get_metric_statistics(
@@ -47,7 +51,6 @@ def fetch_metric_data(metric, query_start, query_end):
         Statistics=[ metric.statistic ],
     )
 
-# sub-method: insert results & return duplicate count, insert count
 def insert_metric_data(metric, metric_statistics):
     import datetime
     insert_count = 0;
@@ -55,7 +58,7 @@ def insert_metric_data(metric, metric_statistics):
     for stat in metric_statistics['Datapoints']:
         try:
             with transaction.atomic(): # allows outer transaction to proceed despite potential for error
-                Value.objects.create(metric=metric, timestamp=pytz.utc.localize(stat['Timestamp']), value=stat['Sum'])
+                Value.objects.create(metric=metric, timestamp=stat['Timestamp'], value=stat['Sum'])
             insert_count += 1
         except IntegrityError:
             failed_count += 1

@@ -12,6 +12,6 @@ if [ -n "${PGSQL_ID}" ]; then
 fi
 docker run -d --name pgsql -e POSTGRES_PASSWORD=password -p 15432:5432 postgres:9.6
 
-export SECRET_KEY="i&09+w!#042qw4fn0908_fkq_9ps53)a-utnfklt$+=eec6mo&"
+export SECRET_KEY="rYj8SB6sbrV3nzu87seJhPfkehurv5nd4nC5tEjF"
 export APP_DEBUG=1
 export DATABASE_URL="postgres://postgres:password@localhost:15432/postgres"

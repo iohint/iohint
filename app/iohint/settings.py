@@ -135,10 +135,9 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERYBEAT_SCHEDULE = {
-    'add-every-30-seconds': {
-        'task': 'cloudwatch.tasks.add',
-        'schedule': timedelta(seconds=3),
-        'args': (16, 16)
+    'schedule_all_elb_refreshes': {
+        'task': 'cloudwatch.tasks.schedule_all_elb_refreshes',
+        'schedule': timedelta(hours=12),
     },
 }
 CELERY_RESULT_BACKEND = 'djcelery.backends.database:DatabaseBackend'

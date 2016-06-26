@@ -1,4 +1,4 @@
-import sys, os
+import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'iohint.settings'
 
 import django
@@ -38,6 +38,6 @@ def create_test_data():
     aws_access_key_id, aws_secret_access_key = get_profile_credentials('replicon-production')
     cred = Credential.objects.create(access_key_id=aws_access_key_id, secret_access_key=aws_secret_access_key)
     lb = LoadBalancer.objects.create(service=service, region='us-west-2', name='na3-dws-int', credential=cred)
-    metric = Metric.objects.create(load_balancer=lb, name='RequestCount', statistic='Sum')
+    Metric.objects.create(load_balancer=lb, name='RequestCount', statistic='Sum')
 
 create_test_data()

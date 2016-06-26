@@ -2,7 +2,6 @@ from celery import shared_task
 from django.db import transaction, IntegrityError
 from .models import Value, Metric, LoadBalancer
 from datetime import datetime, timedelta
-import pytz
 import boto3
 
 # dispatch tasks to refresh the CloudWatch data for every ELB
@@ -55,7 +54,6 @@ def fetch_metric_data(metric, query_start, query_end):
     )
 
 def insert_metric_data(metric, metric_statistics):
-    import datetime
     insert_count = 0;
     failed_count = 0
     for stat in metric_statistics['Datapoints']:

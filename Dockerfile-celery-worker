@@ -1,0 +1,5 @@
+FROM python:3.5-onbuild
+WORKDIR "/usr/src/app/app"
+RUN groupadd -r celery && useradd -r -g celery celery
+USER celery
+CMD [ "celery", "worker", "--app", "iohint", "-l", "info" ]

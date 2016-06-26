@@ -20,7 +20,7 @@ test:
 
 deployment:
   production:
-    branch: [master, django-celery-deployment]
+    branch: master
     commands:
       - docker login -e "nobody@example.com" -u $DOCKER_USER -p $DOCKER_PASS docker.citr.ous.ca
       - docker build -t docker.citr.ous.ca/iohint-celery-beat:${CIRCLE_SHA1} -f Dockerfile-celery-beat .

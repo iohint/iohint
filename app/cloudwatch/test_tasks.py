@@ -229,12 +229,12 @@ def mock_refresh_metric_data(request):
 class TestRefreshElbMetrics:
     def test_retrieves_metric(self, load_balancer, metric, mock_refresh_metric_data):
         refresh_elb_metrics(load_balancer.id)
-        mock_refresh_metric_data.assert_called_with(metric.id)
+        mock_refresh_metric_data.assert_called_with(str(metric.id))
 
     def test_retrieves_multiple_metrics(self, load_balancer, metric, mock_refresh_metric_data):
         second_metric = load_balancer.metric_set.create(name='AnotherMetric', statistic='Sum')
         refresh_elb_metrics(load_balancer.id)
-        mock_refresh_metric_data.assert_called_with(second_metric.id)
+        mock_refresh_metric_data.assert_called_with(str(second_metric.id))
         assert mock_refresh_metric_data.call_count == 2
 
     def test_is_shared_task(self):
@@ -251,13 +251,13 @@ def mock_refresh_elb_metrics(request):
 class TestScheduleAllElbRefreshes:
     def test_schedules_refresh_metric(self, load_balancer, mock_refresh_elb_metrics):
         schedule_all_elb_refreshes()
-        mock_refresh_elb_metrics.delay.assert_called_with(load_balancer.id)
+        mock_refresh_elb_metrics.delay.assert_called_with(str(load_balancer.id))
 
     def test_schedules_multiple_elbs(self, load_balancer, mock_refresh_elb_metrics, service, credential):
         from cloudwatch.models import LoadBalancer
         additional_lb = LoadBalancer.objects.create(service=service, region='aws-region-1', name='lb-name-2', credential=credential)
         schedule_all_elb_refreshes()
-        mock_refresh_elb_metrics.delay.assert_called_with(additional_lb.id)
+        mock_refresh_elb_metrics.delay.assert_called_with(str(additional_lb.id))
         assert mock_refresh_elb_metrics.delay.call_count == 2
 
     def test_is_shared_task(self):

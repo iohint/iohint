@@ -5,23 +5,11 @@ from datetime import datetime, timedelta
 import pytz
 import boto3
 
-@shared_task
-def generate(i):
-    return list(x for x in range(i))
-
-@shared_task
-def add(x, y):
-    return x + y
-
-@shared_task
-def mul(x, y):
-    return x * y
-
 # dispatch tasks to refresh the CloudWatch data for every ELB
 @shared_task
 def schedule_all_elb_refreshes():
     for elb in LoadBalancer.objects.all():
-        refresh_elb_metrics.delay(elb.id)
+        refresh_elb_metrics.delay(str(elb.id))
 
 # Refresh all metrics for a given load balancer; all the metrics will be refreshed in-process, since
 # (a) can't figure out how to make celery take a task w/ a list and execute multiple subtasks without waiting
@@ -30,7 +18,7 @@ def schedule_all_elb_refreshes():
 def refresh_elb_metrics(elb_id):
     elb = LoadBalancer.objects.get(pk=elb_id)
     for metric in elb.metric_set.all():
-        refresh_metric_data(metric.id)
+        refresh_metric_data(str(metric.id))
 
 # Refresh a single metric; multiple calls to CloudWatch will be made until we have retrieved all available
 # data for this metric and stored it in our database.

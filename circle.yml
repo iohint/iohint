@@ -1,0 +1,33 @@
+machine:
+  python:
+    version: 3.5.1
+  environment:
+    SECRET_KEY: 'abc123'
+    DATABASE_URL: postgres://ubuntu:@127.0.0.1:5432/circle_test
+  pre:
+    - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
+  services:
+    - docker
+
+dependencies:
+  override:
+    - pip install -q -r requirements.txt
+
+test:
+  override:
+    - cd app && py.test
+    - cd app && flake8
+
+deployment:
+  production:
+    branch: master
+    commands:
+      - docker login -e "nobody@example.com" -u $DOCKER_USER -p $DOCKER_PASS docker.citr.ous.ca
+      - docker build -t docker.citr.ous.ca/iohint-celery-beat:${CIRCLE_SHA1} -f Dockerfile-celery-beat .
+      - docker tag docker.citr.ous.ca/iohint-celery-beat:${CIRCLE_SHA1} docker.citr.ous.ca/iohint-celery-beat:latest
+      - docker push docker.citr.ous.ca/iohint-celery-beat:${CIRCLE_SHA1}
+      - docker push docker.citr.ous.ca/iohint-celery-beat:latest
+      - docker build -t docker.citr.ous.ca/iohint-celery-worker:${CIRCLE_SHA1} -f Dockerfile-celery-worker .
+      - docker tag docker.citr.ous.ca/iohint-celery-worker:${CIRCLE_SHA1} docker.citr.ous.ca/iohint-celery-worker:latest
+      - docker push docker.citr.ous.ca/iohint-celery-worker:${CIRCLE_SHA1}
+      - docker push docker.citr.ous.ca/iohint-celery-worker:latest

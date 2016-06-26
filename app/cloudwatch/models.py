@@ -15,18 +15,21 @@ import uuid
 #   -> metric
 #     -> value
 
+
 class Service(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     name = models.TextField()
 
     class Meta:
-        unique_together = [ ('owner', 'name') ]
+        unique_together = [('owner', 'name')]
+
 
 class Credential(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     access_key_id = models.CharField(max_length=20)
     secret_access_key = models.CharField(max_length=40)
+
 
 class LoadBalancer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -36,7 +39,8 @@ class LoadBalancer(models.Model):
     credential = models.ForeignKey(Credential)
 
     class Meta:
-        unique_together = [ ('service', 'region', 'name') ]
+        unique_together = [('service', 'region', 'name')]
+
 
 class Metric(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -45,7 +49,8 @@ class Metric(models.Model):
     statistic = models.CharField(max_length=10)
 
     class Meta:
-        unique_together = [ ('load_balancer', 'name', 'statistic') ]
+        unique_together = [('load_balancer', 'name', 'statistic')]
+
 
 class Value(models.Model):
     metric = models.ForeignKey(Metric)
@@ -53,4 +58,4 @@ class Value(models.Model):
     value = models.FloatField()
 
     class Meta:
-        unique_together = [ ('metric', 'timestamp') ]
+        unique_together = [('metric', 'timestamp')]

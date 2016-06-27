@@ -11,4 +11,4 @@ RUN apt-get install sudo && \
 RUN groupadd -r flask && useradd -r -g flask flask
 USER flask
 EXPOSE 6000
-CMD [ "python", "./main.py" ]
+CMD [ "gunicorn", "-w", "8", "-b", ":6000", "main:app" ]

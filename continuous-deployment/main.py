@@ -17,15 +17,11 @@ def login():
             continue
         if event['target']['tag'] != 'latest':
             continue
-        if event['target']['repository'] == 'iohint-celery-beat':
+        if event['target']['repository'] == 'iohint-celery-beat' or \
+           event['target']['repository'] == 'iohint-celery-worker':
             print('Deploying celery-beat')
             subprocess.run('/usr/bin/sudo -E '
-                           '/usr/src/app/deploy-iohint-celery-beat.sh',
-                           shell=True)
-        if event['target']['repository'] == 'iohint-celery-worker':
-            print('Deploying celery-worker')
-            subprocess.run('/usr/bin/sudo -E '
-                           '/usr/src/app/deploy-iohint-celery-worker.sh',
+                           '/usr/src/app/deploy-iohint-app.sh',
                            shell=True)
     return "OK!"
 

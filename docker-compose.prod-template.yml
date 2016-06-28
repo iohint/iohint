@@ -1,0 +1,19 @@
+version: '2'
+
+services:
+
+  iohint-rabbitmq:
+    volumes:
+      - ${HOME}/iohint/rabbitmq:/var/lib/rabbitmq
+
+  iohint-pgsql:
+    volumes:
+      - ${HOME}/iohint/postgres:/var/lib/postgresql/data
+
+  iohint-celery-worker:
+    environment:
+      SECRET_KEY: my-secret-key
+
+  iohint-celery-beat:
+    environment:
+      SECRET_KEY: my-secret-key

@@ -30,6 +30,12 @@ services:
     depends_on:
       - iohint-rabbitmq
       - iohint-pgsql
+    # celery beat w/ django backend crashes immediately if pgsql is not
+    # available, which might happen during docker-compose up if
+    # iohint-pgsql is not yet ready.  Simple solution for now is to just
+    # set a restart policy.  Can't use on-failure, because celery doesn't
+    # even fail with a non-zero exit code.
+    restart: unless-stopped
     environment:
       SECRET_KEY: my-secret-key
       DATABASE_URL: postgres://iohint@iohint-pgsql:5432/iohint

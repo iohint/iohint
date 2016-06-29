@@ -4,6 +4,7 @@ services:
 
   iohint-rabbitmq:
     image: rabbitmq:3.6
+    container_name: iohint_iohint-rabbitmq # prevent scale>1 intentionally
     # rabbitmq uses the hostname to store files in its data directory.  I've
     # added a static hostname here so that an rm, create, and start doesn't
     # end up losing the data present in the RabbitMQ server.
@@ -11,6 +12,7 @@ services:
 
   iohint-pgsql:
     image: postgres:9.6
+    container_name: iohint_iohint-pgsql # prevent scale>1 intentionally
     environment:
       POSTGRES_USER: iohint
       POSTGRES_DB: iohint
@@ -27,6 +29,7 @@ services:
 
   iohint-celery-beat:
     image: docker.citr.ous.ca/iohint-celery-beat:latest
+    container_name: iohint_iohint-celery-beat # prevent scale>1 intentionally
     depends_on:
       - iohint-rabbitmq
       - iohint-pgsql

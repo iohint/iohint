@@ -5,8 +5,8 @@ RUN curl -fsSL https://get.docker.com/ | sh
 # flask to be able to access the docker socket.  The idea here is to make the deployment more secure by not
 # allowing the public app to run as root, but instead only allow the specific operations that are part of the scripts.
 RUN apt-get install sudo && \
-  echo "flask ALL = (root) NOPASSWD:SETENV: /usr/src/app/deploy-iohint-celery-beat.sh, (root) NOPASSWD:SETENV: /usr/src/app/deploy-iohint-celery-worker.sh" > /etc/sudoers && \
-  chmod +x /usr/src/app/deploy-iohint-celery-beat.sh
+  echo "flask ALL = (root) NOPASSWD:SETENV: /usr/src/app/deploy-iohint-app.sh" > /etc/sudoers && \
+  chmod +x /usr/src/app/deploy-iohint-app.sh
 
 RUN groupadd -r flask && useradd -r -g flask flask
 USER flask

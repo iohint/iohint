@@ -12,13 +12,13 @@ def login():
         abort(401)
         return None
 
-    for event in request.json['events']:
-        if event['action'] != 'push':
+    for event in request.json.get('events', []):
+        if event.get('action') != 'push':
             continue
-        if event['target']['tag'] != 'latest':
+        if event.get('target', {}).get('tag') != 'latest':
             continue
-        if event['target']['repository'] == 'iohint-celery-beat' or \
-           event['target']['repository'] == 'iohint-celery-worker':
+        if event['target'].get('repository') == 'iohint-celery-beat' or \
+           event['target'].get('repository') == 'iohint-celery-worker':
             print('Deploying celery-beat')
             subprocess.run('/usr/bin/sudo -E '
                            '/usr/src/app/deploy-iohint-app.sh',

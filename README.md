@@ -12,11 +12,13 @@ Deployment
 Copy docker-compose.prod-template.yml into docker-compose.prod.yml.  You can
 then customize:
 
-1) Populate my-secret-key with a random secret key appropriate for a Django
-application.
+  1) Populate my-secret-key with a random secret key appropriate for a Django
+  application.
 
-2) Update the volumes for the RabbitMQ and PostgreSQL server to point to
-appropriate persistent data storage.
+  2) Update the volumes for the RabbitMQ and PostgreSQL server to point to
+  appropriate persistent data storage.
+  
+  3) ```docker-compose -f docker-compose.yml -f docker-compose.prod.yml up```
 
 Note that docker.citr.ous.ca is a private Docker server, but, the images
 pushed there are built out of this repository from the circle.yml file, so

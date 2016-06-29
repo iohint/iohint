@@ -6,7 +6,9 @@ RUN curl -fsSL https://get.docker.com/ | sh
 # allowing the public app to run as root, but instead only allow the specific operations that are part of the scripts.
 RUN apt-get install sudo && \
   echo "flask ALL = (root) NOPASSWD:SETENV: /usr/src/app/deploy-iohint-app.sh" > /etc/sudoers && \
-  chmod +x /usr/src/app/deploy-iohint-app.sh
+  chmod +x /usr/src/app/deploy-iohint-app.sh && \
+  curl -L https://github.com/docker/compose/releases/download/1.6.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && \
+  chmod +x /usr/local/bin/docker-compose
 
 RUN groupadd -r flask && useradd -r -g flask flask
 USER flask

@@ -2,13 +2,9 @@
 # run this script with any environment variables it wants.
 
 /usr/bin/docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" docker.citr.ous.ca
-cd /home/mfenniak/citr.ous.ca/iohint
+cd /iohint
 
-DOCKER_COMPOSE=/home/mfenniak/bin/docker-compose \
-  -f docker-compose.yml \
-  -f docker-compose.prod.yml \
-  -f docker-compose.admin.yml
-
-$DOCKER_COMPOSE pull
-$DOCKER_COMPOSE run migrate
-systemctl restart docker.iohint-app.service
+/usr/local/bin/docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.admin.yml pull
+/usr/local/bin/docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.admin.yml run migrate
+/usr/local/bin/docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.admin.yml down
+/usr/local/bin/docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.admin.yml up -d

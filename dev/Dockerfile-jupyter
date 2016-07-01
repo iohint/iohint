@@ -1,0 +1,6 @@
+FROM gcr.io/tensorflow/tensorflow:latest-gpu
+
+RUN apt-get update && \
+  apt-get install -y python-dev libpq-dev && \
+  pip install ipython-sql pandas scikit-learn holidays psycopg2 && \
+  apt-get remove --purge -y $BUILD_PACKAGES $(apt-mark showauto) && rm -rf /var/lib/apt/lists/*

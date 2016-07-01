@@ -17,7 +17,9 @@ then customize:
 
   2) Update the volumes for the RabbitMQ and PostgreSQL server to point to
   appropriate persistent data storage.
-  
+
+    2.1) Update PostgreSQL environment variables to use wal-e for DB backups.
+
   3) ```docker-compose -f docker-compose.yml -f docker-compose.prod.yml up```
 
 Note that docker.citr.ous.ca is a private Docker server, but, the images

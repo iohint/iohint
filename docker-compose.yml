@@ -11,11 +11,12 @@ services:
     hostname: iohint-rabbitmq
 
   iohint-pgsql:
-    image: postgres:9.6
+    image: docker.citr.ous.ca/postgres-wale:latest
     container_name: iohint_iohint-pgsql # prevent scale>1 intentionally
     environment:
       POSTGRES_USER: iohint
       POSTGRES_DB: iohint
+      PGUSER: iohint # for wal-e to access db with psql
 
   iohint-celery-worker:
     image: docker.citr.ous.ca/iohint-celery-worker:latest

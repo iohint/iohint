@@ -1,0 +1,10 @@
+FROM postgres:9.6
+
+ADD https://bootstrap.pypa.io/get-pip.py get-pip.py
+RUN apt-get update && \
+  apt-get install -y python-dev ca-certificates build-essential lzop pv && \
+  python get-pip.py && \
+  pip install wal-e && \
+  apt-get remove --purge -y python-dev build-essential && \
+  apt-get autoremove -y && \
+  rm -rf /var/lib/apt/lists/*

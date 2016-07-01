@@ -9,6 +9,11 @@ services:
   iohint-pgsql:
     volumes:
       - ${HOME}/iohint/postgres:/var/lib/postgresql/data
+    environment:
+      AWS_ACCESS_KEY_ID: ...s3-access-key-id...
+      AWS_SECRET_ACCESS_KEY: ...s3-secret-access-key...
+      WALE_S3_PREFIX: s3://...bucket.../...path...
+      AWS_REGION: us-west-2
 
   iohint-celery-worker:
     environment:
